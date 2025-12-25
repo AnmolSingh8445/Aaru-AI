@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Host Runtime</title>
+    <!-- Fonts: Inter for clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Main Overlay Container -->
+    <main id="app-container" class="glass-panel">
+
+        <!-- Left Action: Reset/New -->
+        <div class="action-zone left">
+            <button id="btn-reset" class="icon-btn" aria-label="New Chat">
+                <svg viewBox="0 0 24 24" class="icon">
+                    <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Center: Input Area -->
+        <div class="input-zone">
+            <input type="text" id="input-main" class="glass-input" placeholder="Ask me anything..." autocomplete="off">
+            <div id="status-indicator" class="status-dot hidden"></div>
+        </div>
+
+        <!-- Right Actions: Mic & Submit -->
+        <div class="action-zone right">
+            <button id="btn-mic" class="icon-btn" aria-label="Toggle Microphone">
+                <svg viewBox="0 0 24 24" class="icon">
+                    <path
+                        d="M12,14A3,3 0 0,0 15,11V5A3,3 0 0,0 12,2A3,3 0 0,0 9,5V11A3,3 0 0,0 12,14M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
+                </svg>
+            </button>
+            <button id="btn-submit" class="icon-btn primary-action" aria-label="Submit Query">
+                <svg viewBox="0 0 24 24" class="icon">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+            </button>
+        </div>
+    </main>
+
+    <!-- Response Panel (Expands downwards) -->
+    <section id="panel-response" class="glass-panel response-panel hidden">
+        <div id="response-content" class="markdown-body"></div>
+    </section>
+
+    <!-- Settings Panel (Modal Overlay) -->
+    <section id="panel-settings" class="glass-panel settings-panel hidden">
+        <header class="settings-header">
+            <h2>Settings</h2>
+            <button id="btn-close-settings" class="icon-btn small" aria-label="Close Settings">
+                <svg viewBox="0 0 24 24" class="icon">
+                    <path
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
+            </button>
+        </header>
+
+        <div class="settings-scroll-content">
+            <!-- Transcription Group -->
+            <div class="settings-group">
+                <h3>Voice & Transcription</h3>
+                
+                <!-- Transcription Provider Toggle -->
+                <div class="provider-toggle">
+                    <label class="radio-label">
+                        <input type="radio" name="transcription-provider" value="local" checked>
+                        <span>Local</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="transcription-provider" value="deepgram">
+                        <span>Online</span>
+                    </label>
+                </div>
+
+                <!-- Local Settings -->
+                <div id="sub-transcription-local" class="sub-settings active">
+                    <div class="control-row">
+                        <label for="select-whisper-model">Model</label>
+                        <div class="custom-dropdown" id="dropdown-whisper-model">
+                            <div class="dropdown-trigger">Loading...</div>
+                            <div class="dropdown-options glass-panel"></div>
+                            <input type="hidden" id="select-whisper-model">
+                        </div>
+                    </div>
+                    <div class="control-row toggle-row">
+                        <label for="check-gpu">Enable GPU (CUDA)</label>
+                        <input type="checkbox" id="check-gpu" class="glass-checkbox">
+                    </div>
+                </div>
+
+                <!-- Deepgram Settings -->
+                <div id="sub-transcription-deepgram" class="sub-settings">
+                    <div class="control-row vertical">
+                        <label for="input-deepgram-key">Deepgram API Key</label>
+                        <input type="password" id="input-deepgram-key" class="glass-input small" placeholder="Token...">
+                    </div>
+                </div>
+
+                <div class="control-row toggle-row">
+                    <label for="check-auto-submit">Auto-Submit</label>
+                    <input type="checkbox" id="check-auto-submit" class="glass-checkbox">
+                </div>
+            </div>
+
+            <!-- AI Provider Group -->
+            <div class="settings-group">
+                <h3>Intelligence Provider</h3>
+                <div class="provider-toggle">
+                    <label class="radio-label">
+                        <input type="radio" name="ai-provider" value="ollama" checked>
+                        <span>Ollama</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="ai-provider" value="deepseek">
+                        <span>DeepSeek</span>
+                    </label>
+                </div>
+
+                <!-- Provider Specifics -->
+                <div id="sub-settings-ollama" class="sub-settings active">
+                    <div class="control-row">
+                        <label for="select-ollama-model">Local Model</label>
+                        <div class="custom-dropdown" id="dropdown-ollama-model">
+                            <div class="dropdown-trigger">Loading...</div>
+                            <div class="dropdown-options glass-panel"></div>
+                            <input type="hidden" id="select-ollama-model">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sub-settings-deepseek" class="sub-settings">
+                    <div class="control-row vertical">
+                        <label for="input-deepseek-key">API Key</label>
+                        <input type="password" id="input-deepseek-key" class="glass-input small" placeholder="sk-...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Group -->
+            <div class="settings-group">
+                <h3>Context</h3>
+                <div class="control-row">
+                    <label for="select-interview-type">Interview Type</label>
+                    <div class="custom-dropdown" id="dropdown-interview-type">
+                        <div class="dropdown-trigger">General Professional</div>
+                        <div class="dropdown-options glass-panel">
+                            <div class="dropdown-option" data-value="general">General Professional</div>
+                            <div class="dropdown-option" data-value="hr">HR / Behavioral</div>
+                            <div class="dropdown-option" data-value="technical">Technical / Coding</div>
+                            <div class="dropdown-option" data-value="system_design">System Design</div>
+                            <div class="dropdown-option" data-value="managerial">Managerial / Leadership</div>
+                        </div>
+                        <input type="hidden" id="select-interview-type" value="general">
+                    </div>
+                </div>
+                <div class="control-row vertical">
+                    <label for="text-resume">Resume / Bio</label>
+                    <textarea id="text-resume" class="glass-textarea" rows="4"
+                        placeholder="Paste context here..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <footer class="settings-footer">
+            <button id="btn-save-settings" class="glass-btn primary">Save Changes</button>
+        </footer>
+    </section>
+
+    <!-- Help Panel (Same style as settings) -->
+    <section id="panel-help" class="glass-panel settings-panel hidden">
+        <header class="settings-header">
+            <h2>Help & Shortcuts</h2>
+            <button id="btn-close-help" class="icon-btn small" aria-label="Close Help">
+                <svg viewBox="0 0 24 24" class="icon">
+                    <path
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
+            </button>
+        </header>
+
+        <div class="settings-scroll-content">
+            <div class="settings-group">
+                <h3>How to Use</h3>
+                <p style="font-size: 13px; color: #ddd; margin-bottom: 15px;">
+                    Aaru AI is your intelligent interview assistant. It stays on top of your screen.
+                    Use the <strong>Input Bar</strong> to ask questions, or use the <strong>Smart Capture</strong> to
+                    analyze what's on your screen.
+                </p>
+                <p style="font-size: 13px; color: #ddd;">
+                    Customize the AI persona (Candidate vs Assistant) and context in <strong>Settings</strong>.
+                </p>
+            </div>
+
+            <div class="settings-group">
+                <h3>Keyboard Shortcuts</h3>
+                <div class="shortcut-list">
+                    <div class="control-row"><span>Toggle Mic</span> <span class="key-badge">Alt + Shift + A</span>
+                    </div>
+                    <div class="control-row"><span>Smart Screen Solve</span> <span class="key-badge">Alt + Shift +
+                            S</span></div>
+                    <div class="control-row"><span>New Chat / Reset</span> <span class="key-badge">Alt + Shift +
+                            C</span></div>
+                    <div class="control-row"><span>Settings</span> <span class="key-badge">Alt + Shift + M</span></div>
+                    <div class="control-row"><span>Toggle Visibility</span> <span class="key-badge">Alt + Shift +
+                            V</span></div>
+                    <div class="control-row"><span>Help (This Menu)</span> <span class="key-badge">Alt + Shift +
+                            H</span></div>
+                    <div class="control-row"><span>Move Window</span> <span class="key-badge">Alt + Shift +
+                            Arrows</span></div>
+                    <div class="control-row"><span>Quit App</span> <span class="key-badge">Alt + Shift + E</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
